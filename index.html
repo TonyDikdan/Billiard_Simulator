@@ -1,0 +1,1601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Billiard Game</title>
+  <style>
+    /* CSS styles only, no JavaScript here */
+  </style>
+  <script>
+/*
+  AI-ASSISTED PERFORMANCE BOOSTER
+  This code uses a simple AI-inspired adaptive frame timing and prediction cache to make the billiard simulator run faster and smoother,
+  without changing the existing code logic.
+*/
+
+// Adaptive frame timing: dynamically adjust predictionInterval and predictionIterations for smoothness
+let targetFPS = 600;
+let lastFrameTime = performance.now();
+let frameTimes = [];
+let aiPredictionInterval = predictionInterval;
+let aiPredictionIterations = predictionIterations;
+
+function aiPerformanceTuner() {
+  // Measure frame time
+  const now = performance.now();
+  const delta = now - lastFrameTime;
+  lastFrameTime = now;
+  frameTimes.push(delta);
+  if (frameTimes.length > 30) frameTimes.shift();
+
+  // Calculate average FPS
+  const avgDelta = frameTimes.reduce((a, b) => a + b, 0) / frameTimes.length;
+  const fps = 10000 / avgDelta;
+
+  // AI logic: if FPS drops, reduce prediction workload; if FPS is high, increase for smoother prediction
+  if (fps < targetFPS - 5 && aiPredictionIterations > 30) {
+    aiPredictionIterations = Math.max(30, aiPredictionIterations - 5);
+    aiPredictionInterval = Math.min(100, aiPredictionInterval + 5);
+  } else if (fps > targetFPS + 5 && aiPredictionIterations < 200) {
+    aiPredictionIterations = Math.min(200, aiPredictionIterations + 5);
+    aiPredictionInterval = Math.max(10, aiPredictionInterval - 5);
+  }
+
+  // Apply to global prediction settings
+  window.predictionIterations = aiPredictionIterations;
+  window.predictionInterval = aiPredictionInterval;
+
+  // Optionally, display FPS and AI tuning (for debugging)
+  // Uncomment to show FPS:
+  // ctx.save();
+  // ctx.font = "16px Arial";
+  // ctx.fillStyle = "#fff";
+  // ctx.fillText(`FPS: ${fps.toFixed(1)} | PredIter: ${aiPredictionIterations} | PredInt: ${aiPredictionInterval}`, 10, 20);
+  // ctx.restore();
+  // Continue the performance tuning loop
+  lastFrameTime = now;
+  frameTimes.push(delta);
+  if (frameTimes.length > 30) frameTimes.shift();
+  // Request next frame
+  window.
+  // Use requestAnimationFrame for smooth updates
+  // AI performance tuning
+  // Use requestAnimationFrame for smooth updates
+  // AI performance tuning
+  
+
+
+  requestAnimationFrame(aiPerformanceTuner);
+}
+aiPerformanceTuner();
+
+// AI: Use requestIdleCallback for prediction updates if available (for smoother UI)
+if ('requestIdleCallback' in window) {
+  let aiPredictionIdle = () => {
+    if (
+      predictionSticky ||
+      (Math.abs(cueBall.vx) < minVelocity && Math.abs(cueBall.vy) < minVelocity)
+    ) {
+      cachedTrajectories = predictFullShot();
+    }
+    window.requestIdleCallback(aiPredictionIdle, { timeout: aiPredictionInterval });
+  };
+  window.requestIdleCallback(aiPredictionIdle, { timeout: aiPredictionInterval });
+}
+</script>
+  <style>
+   
+    body {
+      background: #222;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    h1 {
+      margin-top: 20px;
+    }
+    canvas {
+      background: green;
+      display: block;
+      margin: 20px auto;
+      border: 2px solid #444;
+    }
+    .controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin: 10px;
+    }
+    .controls label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #ddd;
+    }
+    .controls input,
+    .controls button {
+      padding: 5px;
+      font-size: 16px;
+      margin-top: 5px;
+    }
+    .controls button {
+      background-color: #444;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .controls button:hover {
+      background-color: #666;
+    }
+    #balls {
+      width: 50px;
+    }
+  </style>
+</head>
+<body>
+  <button id="settingsBtn" style="position:fixed;top:10px;right:10px;z-index:10;">Settings</button>
+<div id="settingsModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.7);z-index:100;align-items:center;justify-content:center;">
+  <div style="background:#333;padding:30px;border-radius:10px;min-width:300px;max-width:90vw;">
+    <h2>Key Bindings</h2>
+    <form id="keybindForm">
+      <div id="keybindList"></div>
+      <button type="button" id="closeSettings">Close</button>
+    </form>
+  </div>
+</div>
+
+  <h1></h1>
+  <canvas id="billiardCanvas" width="800" height="400"></canvas>
+  <div class="controls">
+    <label>
+
+      Shot Power:
+      <input type="range" id="power" min="10" max="100" value="50" />
+    </label>
+    <Lable> 
+      3D view 
+      <input type="checkbox" id="3dView" checked />
+    </Lable>
+    <label>
+      Masse Spin:
+      <input type="range" id="spin" min="-600" max="600" value="0" />
+    </label>
+    <label>
+      Vertical Spin:
+      <input type="range" id="verticalSpin" min="-100" max="100" value="0" />
+    </label>
+    <label>
+      Balls:
+      <input type="number" id="balls" min="9" max="16" value="16" readonly />
+    </label>
+  
+    cuestickcolor:
+    <label>
+      <input type="color" id="cuestickcolor" />
+    </label>
+    <label>
+      cuesticklength:
+      <input type="range" id="cuesticklength" min="0" max="200" value="100" />
+    </label>
+    
+    <button onclick="resetGame()">Reset</button>
+    <button onclick="setBallInHand()">Ball In Hand</button>
+    <button onclick="releaseCueBall()">Release Cue Ball</button>
+    <button type="button" id="resetKeybinds" style="margin-right:10px;">Reset Keybinds</button>
+    <script>
+      document.getElementById("resetKeybinds").addEventListener("click", () => {
+        localStorage.removeItem("billiardKeybinds");
+        keybinds = {
+          powerUp: "ArrowUp",
+          powerDown: "ArrowDown",
+          spinLeft: "ArrowLeft",
+          spinRight: "ArrowRight",
+          verticalSpinUp: "w",
+          verticalSpinDown: "s",
+          resetAngles: "z",
+          resetPower: "x",
+          resetGame: "e",
+          ballInHand: "h",
+          releaseCue: "g",
+          ballsReset: "r",
+          ballsCycle: "f",
+          cueLengthUp: "d",
+          cueLengthDown: "a",
+          cueLengthCycle: "q",
+          cueColorCycle: "c",
+          predictionOff: "o",
+          predictionSingle: "k",
+          predictionFull: "i",
+          predictionAdvanced: "l",
+          predictionAll: "j",
+          predictionMulti: "m",
+          predictionSticky: "p"
+        };
+        updateKeybindUI();
+      });
+    </script>
+    <button id="settingsBtn">Settings</button>
+  </div>
+
+
+  <script>
+    // Settings modal logic
+const settingsBtn = document.getElementById("settingsBtn");
+const settingsModal = document.getElementById("settingsModal");
+const closeSettings = document.getElementById("closeSettings");
+
+settingsBtn.addEventListener("click", () => {
+  settingsModal.style.display = "flex";
+});
+
+closeSettings.addEventListener("click", () => {
+  settingsModal.style.display = "none";
+});
+
+// Optional: close modal when clicking outside the modal content
+settingsModal.addEventListener("click", (e) => {
+  if (e.target === settingsModal) {
+    settingsModal.style.display = "none";
+  }
+});
+    // Billiard game setup
+    // Get canvas and context
+// Default keybinds
+let keybinds = {
+  resetKeybinds: "/",
+  powerUp: "ArrowUp",
+  powerDown: "ArrowDown",
+  spinLeft: "ArrowLeft",
+  spinRight: "ArrowRight",
+  verticalSpinUp: "w",
+  verticalSpinDown: "s",
+  resetAngles: "z",
+  resetPower: "x",
+  resetGame: "e",
+  ballInHand: "h",
+  releaseCue: "g",
+  ballsReset: "r",
+  ballsCycle: "f",
+  cueLengthUp: "d",
+  cueLengthDown: "a",
+  cueLengthCycle: "q",
+  cueColorCycle: "c",
+  predictionOff: "o",
+  predictionSingle: "k",
+  predictionFull: "i",
+  predictionAdvanced: "l",
+  predictionAll: "j",
+  predictionMulti: "m",
+  predictionSticky: "p"
+};
+// Load keybinds from localStorage if available
+const savedKeybinds = localStorage.getItem("billiardKeybinds");
+if (savedKeybinds) {
+  keybinds = JSON.parse(savedKeybinds);
+}
+// Update UI with current keybinds
+function updateKeybindUI() {
+  const keybindList = document.getElementById("keybindList");
+  keybindList.innerHTML = ""; // Clear existing keybinds
+  for (const [action, key] of Object.entries(keybinds)) {
+    const label = document.createElement("label");
+    label.textContent = `${action.replace(/([A-Z])/g, ' $1')}: `;
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = key;
+    input.addEventListener("change", (e) => {
+      keybinds[action] = e.target.value;
+      localStorage.setItem("billiardKeybinds", JSON.stringify(keybinds));
+    });
+    label.appendChild(input);
+    keybindList.appendChild(label);
+  }
+}
+
+updateKeybindUI(); // Initial UI update
+
+    const canvas = document.getElementById("billiardCanvas");
+    const ctx = canvas.getContext("2d");
+
+
+    // UI Elements
+    const powerInput = document.getElementById("power");
+    const spinInput = document.getElementById("spin");
+    const verticalSpinInput = document.getElementById("verticalSpin");
+    const ballsInput = document.getElementById("balls");
+
+
+    let shotPower = parseFloat(powerInput.value);
+    let spin = parseFloat(spinInput.value);               // Side spin (for masse effects)
+    let verticalSpin = parseFloat(verticalSpinInput.value); // Top (positive) / Bottom (negative) spin
+    let ballCount = parseInt(ballsInput.value);             // Always 16 for an 8-ball game
+
+
+    // Physics constants
+    const friction = 0.99;
+    const spinFriction = 0.98;
+    const verticalSpinFriction = 0.98;
+    const collisionDampening = 0.98;
+    const minVelocity = 0.05;
+    const verticalSpinFactor = 0.002;
+
+
+    // Prediction settings
+    const predictionIterations = 100;
+    const predictionInterval = 50;
+    let cachedTrajectories = [];
+    let lastPredictionTime = 0;
+
+
+    // Mouse position for aiming
+    let mousePos = { x: canvas.width / 2, y: canvas.height / 2 };
+
+
+    // Table pockets (six pockets)
+    const pocketRadius = 20;
+    const pockets = [
+      { x: 0, y: 0, r: pocketRadius },
+      { x: canvas.width / 2, y: 0, r: pocketRadius },
+      { x: canvas.width, y: 0, r: pocketRadius },
+      { x: 0, y: canvas.height, r: pocketRadius },
+      { x: canvas.width / 2, y: canvas.height, r: pocketRadius },
+      { x: canvas.width, y: canvas.height, r: pocketRadius }
+    ];
+
+
+    // For object balls: use 7 colors (each appearing twice) plus the 8-ball (black)
+    const pairColors = ["red", "blue", "lime", "yellow", "purple", "orange", "cyan"];
+   
+    // Utility: Fisher-Yates shuffle.
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+// Keyboard shortcuts for UI variables
+document.addEventListener("keydown", (e) => {
+  // Power: Up/Down arrows
+  if (e.key === "ArrowUp") {
+    powerInput.value = Math.min(100, parseInt(powerInput.value) + 1);
+    powerInput.dispatchEvent(new Event("input"));
+  }
+  if (e.key === "ArrowDown") {
+    powerInput.value = Math.max(10, parseInt(powerInput.value) - 1);
+    powerInput.dispatchEvent(new Event("input"));
+  }
+  // Masse Spin: Left/Right arrows
+  if (e.key === "ArrowLeft") {
+    spinInput.value = Math.max(-100, parseInt(spinInput.value) - 1);
+    spinInput.dispatchEvent(new Event("input"));
+  }
+  if (e.key === "ArrowRight") {
+    spinInput.value = Math.min(100, parseInt(spinInput.value) + 1);
+    spinInput.dispatchEvent(new Event("input"));
+  }
+  // Vertical Spin: W/S
+  if (e.key.toLowerCase() === "w") {
+    verticalSpinInput.value = Math.min(100, parseInt(verticalSpinInput.value) + 1);
+    verticalSpinInput.dispatchEvent(new Event("input"));
+  }
+  if (e.key.toLowerCase() === "s") {
+    verticalSpinInput.value = Math.max(-100, parseInt(verticalSpinInput.value) - 1);
+    verticalSpinInput.dispatchEvent(new Event("input"));
+  }
+  // reset angles
+    if (e.key.toLowerCase() === "z") {
+        spinInput.value = 0;
+        spinInput.dispatchEvent(new Event("input"));
+        verticalSpinInput.value = 0;
+        verticalSpinInput.dispatchEvent(new Event("input"));
+    }
+    // 3D view toggle: b
+    if (e.key.toLowerCase() === "b") {
+        const threeDViewCheckbox = document.getElementById("3dView");
+        threeDViewCheckbox.checked = !threeDViewCheckbox.checked;
+        // Optionally, you can trigger a redraw or update the view here
+        console.log(`3D View: ${threeDViewCheckbox.checked ? "Enabled" : "Disabled"}`);
+    }
+
+    // reset power: t
+    if (e.key.toLowerCase() === "x") {
+    powerInput.value = 50;
+    powerInput.dispatchEvent(new Event("input"));
+    }
+  // reset game: e
+  if (e.key === "e") {
+    resetGame();
+  }
+  // Ball in hand: H
+  if (e.key.toLowerCase() === "h") {
+    setBallInHand();
+  }
+  // Release cue ball: G
+  if (e.key.toLowerCase() === "g") {
+    releaseCueBall();
+  }
+  // Ball count: R/F (reset to 16, or cycle through 9-16)
+  if (e.key.toLowerCase() === "r") {
+    ballsInput.value = 16;
+    ballCount = 16;
+    ballsInput.dispatchEvent(new Event("input"));
+  }
+  if (e.key.toLowerCase() === "f") {
+    ballCount = (ballCount % 8) + 9; // Cycle through 9 to 16
+    ballsInput.value = ballCount;
+    ballsInput.dispatchEvent(new Event("input"));
+  }
+
+  // Cue stick length: D/A
+  const cuestickLengthInput = document.getElementById("cuesticklength");
+  if (e.key.toLowerCase() === "d") {
+    cuestickLengthInput.value = Math.min(200, parseInt(cuestickLengthInput.value) + 1);
+  }
+  if (e.key.toLowerCase() === "a") {
+    cuestickLengthInput.value = Math.max(0, parseInt(cuestickLengthInput.value) - 1);
+  }
+  cuestickLengthInput.dispatchEvent(new Event("input"));
+  // Cue stick length: Q (cycles through a few preset lengths)
+  if (e.key.toLowerCase() === "q") {
+    const lengths = [50, 100, 150, 200];
+    let idx = lengths.indexOf(parseInt(cuestickLengthInput.value));
+    cuestickLengthInput.value = lengths[(idx + 1) % lengths.length];
+    cuestickLengthInput.dispatchEvent(new Event("input"));
+  }
+  //resetkeybinds: /
+  if (e.key === "/") {
+    localStorage.removeItem("billiardKeybinds");
+    keybinds = {
+      resetKeybinds: "/",
+      powerUp: "ArrowUp",
+      powerDown: "ArrowDown",
+      spinLeft: "ArrowLeft",
+      spinRight: "ArrowRight",
+      verticalSpinUp: "w",
+      verticalSpinDown: "s",
+      resetAngles: "z",
+      resetPower: "x",
+      resetGame: "e",
+      ballInHand: "h",
+      releaseCue: "g",
+      ballsReset: "r",
+      ballsCycle: "f",
+      cueLengthUp: "d",
+      cueLengthDown: "a",
+      cueLengthCycle: "q",
+      cueColorCycle: "c",
+      predictionOff: "o",
+      predictionSingle: "k",
+      predictionFull: "i",
+      predictionAdvanced: "l",
+      predictionAll: "j",
+      predictionMulti: "m",
+      predictionSticky: "p"
+    };
+    updateKeybindUI();
+  }
+  // Cue stick color: C (cycles through a few preset colors)
+  const cuestickColorInput = document.getElementById("cuestickcolor");
+  if (e.key.toLowerCase() === "c") {
+    const colors = ["#ffffff", "#964B00", "#FFD700", "#0000FF", "#FF0000"];
+    let idx = colors.indexOf(cuestickColorInput.value);
+    cuestickColorInput.value = colors[(idx + 1) % colors.length];
+  }
+  cuestickColorInput.dispatchEvent(new Event("input"));
+  // Prevent default action for these keys
+  if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "w", "s", "e", "h", "g", "r", "f", "d", "a", "q", "c"].includes(e.key.toLowerCase())) {
+    e.preventDefault();
+  }
+  // Log the key pressed for debugging
+  console.log(`Key pressed: ${e.key} | Power: ${powerInput.value}, Spin: ${spinInput.value}, Vertical Spin: ${verticalSpinInput.value}, Balls: ${ballsInput.value}`);
+  // Log the cuestick color and length
+  console.log(`Cue Stick Color: ${cuestickColorInput.value}, Length: ${cuestickLengthInput.value}`);
+  // Log the current prediction mode
+  console.log(`Prediction Mode: ${predictionMode}, Sticky: ${predictionSticky}`);
+  // Log the current mouse position
+  console.log(`Mouse Position: (${mousePos.x}, ${mousePos.y})`);
+  // Log the current state of the cue ball
+  console.log(`Cue Ball - Position: (${cueBall.x}, ${cueBall.y}), Velocity: (${cueBall.vx}, ${cueBall.vy}), Spin: ${cueBall.spin}, Vertical Spin: ${cueBall.verticalSpin}, In Hand: ${cueBall.inHand}`);
+  // Log the current state of all balls
+  console.log("Current Balls State:");
+  balls.forEach((ball, index) => {
+    console.log(`Ball ${index} - Position: (${ball.x}, ${ball.y}), Velocity: (${ball.vx}, ${ball.vy}), Spin: ${ball.spin}, Vertical Spin: ${ball.verticalSpin}, Color: ${ball.color}`);
+  });
+  // Log the current prediction settings
+  console.log(`Prediction Settings - Iterations: ${predictionIterations}, Interval: ${predictionInterval}`);
+  // Log the current AI performance settings
+  console.log(`AI Performance - Iterations: ${aiPredictionIterations}, Interval: ${aiPredictionInterval}`);
+  // Log the current FPS
+  const avgFrameTime = frameTimes.reduce((a, b) => a + b, 0) / frameTimes.length;
+  const fps = 1000 / avgFrameTime;
+  console.log(`Current FPS: ${fps.toFixed(1)}`);
+  // Log the current prediction mode
+  console.log(`Current Prediction Mode: ${predictionMode}, Sticky: ${predictionSticky}`);
+
+  // Log the current prediction cache
+  console.log("Cached Trajectories:", cachedTrajectories.map(t => t.trajectory.map(p => `(${p.x.toFixed(2)}, ${p.y.toFixed(2)})`)));
+  // Log the current mouse position
+  console.log(`Mouse Position: (${mousePos.x.toFixed(2)}, ${mousePos.y.toFixed(2)})`);
+  // Log the current cue ball state
+  console.log(`Cue Ball - Position: (${cueBall.x.toFixed(2)}, ${cueBall.y.toFixed(2)}), Velocity: (${cueBall.vx.toFixed(2)}, ${cueBall.vy.toFixed(2)}), Spin: ${cueBall.spin}, Vertical Spin: ${cueBall.verticalSpin}, In Hand: ${cueBall.inHand}`);
+  // Log the current balls state
+  balls.forEach((ball, index) => {
+    console.log(`Ball ${index} - Position: (${ball.x.toFixed(2)}, ${ball.y.toFixed(2)}), Velocity: (${ball.vx.toFixed(2)}, ${ball.vy.toFixed(2)}), Spin: ${ball.spin}, Vertical Spin: ${ball.verticalSpin}, Color: ${ball.color}`);
+  });
+  // Log the current prediction settings
+  console.log(`Prediction Settings - Iterations: ${predictionIterations}, Interval: ${predictionInterval}`);
+  // Log the current AI performance settings
+  console.log(`AI Performance - Iterations: ${aiPredictionIterations}, Interval: ${aiPredictionInterval}`);
+
+  
+});
+
+    // BilliardBall class
+    class BilliardBall {
+      constructor(x, y, radius, color) {
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+        this.color = color;
+        this.vx = 0;
+        this.vy = 0;
+        this.spin = 0;
+        this.verticalSpin = 0;
+        this.mass = 1;
+        this.isJumping = false;
+        this.jumpVelocity = 0;
+        this.inHand = false; // Cue ball "ball in hand" flag
+      }
+     
+        draw() {
+          // Improved shadow: soft, offset, and colored for realism
+          ctx.save();
+          ctx.globalAlpha = 0.45;
+          ctx.beginPath();
+          ctx.ellipse(
+            this.x,
+            this.y + this.radius * 0.85,
+            this.radius * 1.18,
+            this.radius * 0.42,
+            0,
+            0,
+            Math.PI * 2
+          );
+          // Use a dark greenish shadow for realism on the table
+          const shadowGrad = ctx.createRadialGradient(
+            this.x,
+            this.y + this.radius * 0.85,
+            this.radius * 0.1,
+            this.x,
+            this.y + this.radius * 0.85,
+            this.radius * 1.18
+          );
+          shadowGrad.addColorStop(0, "rgba(0,0,0,0.22)");
+          shadowGrad.addColorStop(0.6, "rgba(0,32,0,0.18)");
+          shadowGrad.addColorStop(1, "rgba(0,0,0,0)");
+          ctx.fillStyle = shadowGrad;
+          ctx.filter = "blur(7px)";
+          ctx.fill();
+          ctx.filter = "none";
+          ctx.globalAlpha = 1;
+          ctx.restore();
+
+          // Draw ball number (except for cue ball, which is "white")
+          const isCue = this.color === "white";
+          let ballNumber = null;
+          if (!isCue) {
+            if (this.color === "black") {
+              ballNumber = 8;
+            } else {
+              const objectBalls = balls.filter(
+                b => b.color !== "white" && b.color !== "black"
+              );
+              const idx = objectBalls.indexOf(this);
+              if (idx !== -1) {
+                if (idx < 7) {
+                  ballNumber = idx + 1;
+                } else {
+                  ballNumber = idx + 2;
+                }
+              }
+            }
+          }
+
+          // 3D sphere effect: toggle with 3D view checkbox
+          const threeDViewCheckbox = document.getElementById("3dView");
+          if (threeDViewCheckbox && threeDViewCheckbox.checked) {
+            // Draw a "sheper" (sheen+paper) effect: a stylized, cartoonish highlight
+            // Main ball body
+            const grad = ctx.createRadialGradient(
+              this.x - this.radius * 0.4,
+              this.y - this.radius * 0.4,
+              this.radius * 0.2,
+              this.x,
+              this.y,
+              this.radius
+            );
+            grad.addColorStop(0, "#fff");
+            grad.addColorStop(0.25, this.color);
+            grad.addColorStop(1, "#222");
+
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fillStyle = grad;
+            ctx.fill();
+            ctx.closePath();
+
+            // "Sheper" highlight: a stylized, paper-like white streak
+            ctx.save();
+            ctx.globalAlpha = 0.45;
+            ctx.beginPath();
+            ctx.ellipse(
+              this.x - this.radius * 0.45,
+              this.y - this.radius * 0.55,
+              this.radius * 0.35,
+              this.radius * 0.13,
+              Math.PI / 6,
+              0,
+              Math.PI * 2
+            );
+            ctx.fillStyle = "#fff";
+            ctx.shadowColor = "#fff";
+            ctx.shadowBlur = 6;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.globalAlpha = 1;
+            ctx.restore();
+
+            // Optional: a second, smaller highlight for extra "sheper" effect
+            ctx.save();
+            ctx.globalAlpha = 0.18;
+            ctx.beginPath();
+            ctx.ellipse(
+              this.x - this.radius * 0.2,
+              this.y - this.radius * 0.3,
+              this.radius * 0.18,
+              this.radius * 0.07,
+              Math.PI / 4,
+              0,
+              Math.PI * 2
+            );
+            ctx.fillStyle = "#fff";
+            ctx.fill();
+            ctx.globalAlpha = 1;
+            ctx.restore();
+          } else {
+            // Flat color (2D look)
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+            ctx.closePath();
+          }
+
+          // Draw ball number (if not cue ball)
+          if (ballNumber !== null) {
+            ctx.save();
+            ctx.font = `${this.radius * 1.3}px Arial Black,Arial,sans-serif`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius * 0.6, 0, Math.PI * 2);
+            ctx.fillStyle = "#fff";
+            ctx.globalAlpha = 0.85;
+            ctx.fill();
+            ctx.globalAlpha = 1;
+            ctx.closePath();
+            ctx.fillStyle = (this.color === "black") ? "#fff" : "#111";
+            ctx.fillText(ballNumber, this.x, this.y + 1);
+            ctx.restore();
+          }
+        }
+     
+      update() {
+        // If this is the cue ball and it is in hand, skip physics updates.
+        if (this.color === "white" && this.inHand === true) return;
+        // Decay side spin and apply lateral (masse) effect.
+        this.spin *= spinFriction;
+        let lateralForce = this.spin * 0.001;
+        let perpVx = -this.vy;
+        let perpVy = this.vx;
+        let len = Math.sqrt(perpVx * perpVx + perpVy * perpVy);
+        if (len > 0) {
+          perpVx /= len;
+          perpVy /= len;
+          this.vx += perpVx * lateralForce;
+          this.vy += perpVy * lateralForce;
+        }
+        // Apply vertical spin effect.
+        let speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+        if (speed > 0) {
+          let normVx = this.vx / speed;
+          let normVy = this.vy / speed;
+          this.vx += normVx * this.verticalSpin * verticalSpinFactor;
+          this.vy += normVy * this.verticalSpin * verticalSpinFactor;
+        }
+        // Decay vertical spin.
+        this.verticalSpin *= verticalSpinFriction;
+        // Update position.
+        this.x += this.vx;
+        this.y += this.vy;
+        // Apply friction.
+        this.vx *= friction;
+        this.vy *= friction;
+        if (Math.abs(this.vx) < minVelocity) this.vx = 0;
+        if (Math.abs(this.vy) < minVelocity) this.vy = 0;
+        // Handle wall collisions.
+        if (this.x - this.radius < 0) {
+          this.x = this.radius;
+          this.vx = -this.vx * collisionDampening;
+        }
+        if (this.x + this.radius > canvas.width) {
+          this.x = canvas.width - this.radius;
+          this.vx = -this.vx * collisionDampening;
+        }
+        if (this.y - this.radius < 0) {
+          this.y = this.radius;
+          this.vy = -this.vy * collisionDampening;
+        }
+        if (this.y + this.radius > canvas.height) {
+          this.y = canvas.height - this.radius;
+          this.vy = -this.vy * collisionDampening;
+        }
+      }
+     
+      applyMasse() {
+        let angle = this.spin / 1000;
+        let cos = Math.cos(angle);
+        let sin = Math.sin(angle);
+        let newVx = this.vx * cos - this.vy * sin;
+        let newVy = this.vx * sin + this.vy * cos;
+        this.vx = newVx;
+        this.vy = newVy;
+      }
+    }
+
+
+    // Global ball array and cue ball.
+    let balls = [];
+    let cueBall = null;
+   
+    // Variables for dragging the cue ball.
+    let isDraggingCue = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+
+
+    // RESET GAME: For 16 balls, set up an 8-ball rack.
+    function resetGame() {
+      balls = [];
+      if (ballCount === 16) {
+        // Place cue ball in the kitchen (left side) and mark it as not in hand.
+        cueBall = new BilliardBall(150, canvas.height / 2, 10, "white");
+        cueBall.inHand = false;
+        balls.push(cueBall);
+        // Prepare object ball colors: create a list of 14 colors (2 per each of 7 colors).
+        let objectColors = [];
+        pairColors.forEach(color => {
+          objectColors.push(color);
+          objectColors.push(color);
+        });
+        shuffle(objectColors);
+        // Arrange 15 object balls in a triangular rack.
+        const ballDiameter = 20;
+        const rowSpacingX = ballDiameter * 0.5;
+        const rackApexX = 600;
+        const rackApexY = canvas.height / 2;
+        let colorIndex = 0;
+        // There are 5 rows: row 0 has 1 ball; row 1 has 2; row 2 has 3; row 3 has 4; row 4 has 5.
+        // Reserve the center spot (row 2, column 1) for the 8-ball.
+        for (let i = 0; i < 5; i++) {
+          let rowX = rackApexX + i * rowSpacingX;
+          let rowHeight = i * ballDiameter;
+          for (let j = 0; j <= i; j++) {
+            let rowY = rackApexY - rowHeight / 2 + j * ballDiameter;
+            let color;
+            if (i === 2 && j === 1) {
+              color = "black"; // 8-ball
+            } else {
+              color = objectColors[colorIndex];
+              colorIndex++;
+            }
+            balls.push(new BilliardBall(rowX, rowY, 10, color));
+          }
+        }
+      } else {
+        // Fallback for non-16-ball setups (random placement).
+        cueBall = new BilliardBall(100, canvas.height / 2, 10, "white");
+        cueBall.inHand = false;
+        balls.push(cueBall);
+        for (let i = 1; i < ballCount; i++) {
+          let x = Math.random() * (canvas.width - 40) + 20;
+          let y = Math.random() * (canvas.height - 40) + 20;
+          let color = pairColors[Math.floor(Math.random() * pairColors.length)];
+          balls.push(new BilliardBall(x, y, 10, color));
+        }
+      }
+      console.log("Game reset");
+    }
+    resetGame();
+
+
+    // --- Cue Ball Dragging & "Ball in Hand" Mode ---
+    canvas.addEventListener("mousedown", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+      const dx = mouseX - cueBall.x;
+      const dy = mouseY - cueBall.y;
+      if (Math.sqrt(dx * dx + dy * dy) < cueBall.radius) {
+        isDraggingCue = true;
+        dragStartX = cueBall.x;
+        dragStartY = cueBall.y;
+      }
+    });
+    canvas.addEventListener("mousemove", (e) => {
+      if (isDraggingCue && cueBall.inHand) {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        cueBall.x = mouseX;
+        cueBall.y = mouseY;
+      }
+    });
+    canvas.addEventListener("mouseup", (e) => {
+      if (isDraggingCue) {
+        const dx = cueBall.x - dragStartX;
+        const dy = cueBall.y - dragStartY;
+        if (Math.sqrt(dx * dx + dy * dy) < 5 && !cueBall.inHand) {
+          strikeCueBall();
+        }
+      }
+      isDraggingCue = false;
+    });
+    canvas.addEventListener("mouseleave", (e) => {
+      isDraggingCue = false;
+    });
+    // Also allow a click (when not dragging) to strike the cue ball if nearly stationary.
+    canvas.addEventListener("click", (e) => {
+      if (!isDraggingCue && Math.abs(cueBall.vx) < 0.5 && Math.abs(cueBall.vy) < 0.5 && !cueBall.inHand) {
+        strikeCueBall();
+      }
+    });
+
+
+    // When the cue ball is struck, exit ball-in-hand mode.
+    function strikeCueBall() {
+      cueBall.inHand = false;
+      const dx = mousePos.x - cueBall.x;
+      const dy = mousePos.y - cueBall.y;
+      const angle = Math.atan2(dy, dx);
+      cueBall.vx = Math.cos(angle) * (shotPower / 5);
+      cueBall.vy = Math.sin(angle) * (shotPower / 5);
+      cueBall.spin = spin;
+      if (Math.abs(spin) > 30) {
+        cueBall.applyMasse();
+      }
+      cueBall.verticalSpin = verticalSpin;
+      console.log("Cue ball struck");
+    }
+
+
+    // --- "Ball In Hand" Button ---
+    function setBallInHand() {
+      cueBall.inHand = true;
+      cueBall.vx = 0;
+      cueBall.vy = 0;
+      // Optionally reposition to the kitchen.
+      cueBall.x = 150;
+      cueBall.y = canvas.height / 2;
+      console.log("Ball in hand activated");
+    }
+
+
+    // --- "Release Cue Ball" Button ---
+    function releaseCueBall() {
+      cueBall.inHand = false;
+      console.log("Cue ball released from ball in hand mode");
+    }
+
+
+    // Update UI values.
+    powerInput.addEventListener("input", (e) => { shotPower = parseFloat(e.target.value); });
+    spinInput.addEventListener("input", (e) => { spin = parseFloat(e.target.value); });
+    verticalSpinInput.addEventListener("input", (e) => { verticalSpin = parseFloat(e.target.value); });
+    // Ball count remains locked at 16.
+
+
+    // Update mouse position (for aiming and trajectory preview).
+    canvas.addEventListener("mousemove", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      mousePos.x = e.clientX - rect.left;
+      mousePos.y = e.clientY - rect.top;
+    });
+    // -------------------------
+    // ENHANCED PREDICTIVE SIMULATION CODE (for drawing shot trajectories)
+    // -------------------------
+    let predictionMode = 0; // 0: Off, 1: Single Shot, 2: Full Tree, 3: Advanced Prediction, 4: All Possible Shots, 5: Multi Ball
+    let predictionSticky = false; // If true, keep prediction visible after shot
+
+    document.addEventListener("keydown", (e) => {
+  if (e.key.toLowerCase() === "o") {
+    predictionMode = 0; // Off
+    console.log("Prediction mode: Off");
+  } else if (e.key.toLowerCase() === "k") {
+    predictionMode = 1; // Single Shot
+    console.log("Prediction mode: Single Shot");
+  } else if (e.key.toLowerCase() === "i") {
+    predictionMode = 2; // Full Tree
+    console.log("Prediction mode: Full Tree");
+  } else if (e.key.toLowerCase() === "l") {
+    predictionMode = 3; // Advanced Prediction
+    console.log("Prediction mode: Advanced Prediction");
+  } else if (e.key.toLowerCase() === "j") {
+    predictionMode = 4; // All Possible Shots (Decision Tree)
+    console.log("Prediction mode: All Possible Shots (Decision Tree)");
+  } else if (e.key.toLowerCase() === "m") {
+    predictionMode = 5; // Multi Ball
+    console.log("Prediction mode: Multi Ball");
+  } else if (e.key.toLowerCase() === "p") {
+    predictionSticky = !predictionSticky;
+    console.log("Prediction sticky:", predictionSticky ? "ON" : "OFF");
+  }
+  
+  console.log(`Prediction mode set to: ${predictionMode} (Sticky: ${predictionSticky})`);
+});
+
+
+    // Helper: Generate N evenly spaced angles (in radians) around a circle
+    function generateAngles(n) {
+      const angles = [];
+      for (let i = 0; i < n; i++) {
+      angles.push((i / n) * 2 * Math.PI);
+      }
+      return angles;
+    }
+
+    // Advanced: Decision tree simulation for all possible shots
+    // Improved: Predict all possible shots with better collision and pocket detection
+    function predictAllPossibleShots() {
+      const simBalls = balls.map(b => ({
+      x: b.x,
+      y: b.y,
+      vx: b.vx,
+      vy: b.vy,
+      spin: b.spin,
+      verticalSpin: b.verticalSpin,
+      radius: b.radius,
+      mass: b.mass,
+      color: b.color
+      }));
+
+      const shotTree = [];
+      const cueIndex = 0;
+      const angleSteps = 36; // More angles for finer prediction
+      const angles = generateAngles(angleSteps);
+
+      angles.forEach(angle => {
+      // Clone all balls for this branch
+      const branchBalls = simBalls.map(b => ({ ...b }));
+      const cue = branchBalls[cueIndex];
+      // Set initial velocity for this angle
+      cue.vx = Math.cos(angle) * (shotPower / 5);
+      cue.vy = Math.sin(angle) * (shotPower / 5);
+      cue.spin = spin;
+      cue.verticalSpin = verticalSpin;
+
+      // Optionally apply masse
+      if (Math.abs(spin) > 30) {
+        let masseAngle = spin / 1000;
+        let cos = Math.cos(masseAngle);
+        let sin = Math.sin(masseAngle);
+        let newVx = cue.vx * cos - cue.vy * sin;
+        let newVy = cue.vx * sin + cue.vy * cos;
+        cue.vx = newVx;
+        cue.vy = newVy;
+      }
+
+      // Simulate this shot for a short time
+      const trajectory = [];
+      let pocketed = false;
+      for (let iter = 0; iter < predictionIterations; iter++) {
+        trajectory.push({ x: cue.x, y: cue.y });
+
+        // Decay side spin and apply lateral (masse) effect
+        cue.spin *= spinFriction;
+        let lateralForce = cue.spin * 0.001;
+        let perpVx = -cue.vy;
+        let perpVy = cue.vx;
+        let len = Math.sqrt(perpVx * perpVx + perpVy * perpVy);
+        if (len > 0) {
+        perpVx /= len;
+        perpVy /= len;
+        cue.vx += perpVx * lateralForce;
+        cue.vy += perpVy * lateralForce;
+        }
+
+        // Apply vertical spin effect
+        const speed = Math.sqrt(cue.vx * cue.vx + cue.vy * cue.vy);
+        if (speed > 0) {
+        const normVx = cue.vx / speed;
+        const normVy = cue.vy / speed;
+        cue.vx += normVx * cue.verticalSpin * verticalSpinFactor;
+        cue.vy += normVy * cue.verticalSpin * verticalSpinFactor;
+        }
+        cue.verticalSpin *= verticalSpinFriction;
+
+        // Update position
+        cue.x += cue.vx;
+        cue.y += cue.vy;
+
+        // Apply friction
+        cue.vx *= friction;
+        cue.vy *= friction;
+
+        // Handle wall collisions
+        if (cue.x - cue.radius < 0) {
+        cue.x = cue.radius;
+        cue.vx = -cue.vx * collisionDampening;
+        }
+        if (cue.x + cue.radius > canvas.width) {
+        cue.x = canvas.width - cue.radius;
+        cue.vx = -cue.vx * collisionDampening;
+        }
+        if (cue.y - cue.radius < 0) {
+        cue.y = cue.radius;
+        cue.vy = -cue.vy * collisionDampening;
+        }
+        if (cue.y + cue.radius > canvas.height) {
+        cue.y = canvas.height - cue.radius;
+        cue.vy = -cue.vy * collisionDampening;
+        }
+
+        // Stop if cue ball is pocketed
+        for (const pocket of pockets) {
+        const dx = cue.x - pocket.x;
+        const dy = cue.y - pocket.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < pocket.r) {
+          pocketed = true;
+          break;
+        }
+        }
+        if (pocketed) break;
+
+        // Stop if cue ball is slow
+        const allStopped = Math.abs(cue.vx) < minVelocity && Math.abs(cue.vy) < minVelocity;
+        if (allStopped) break;
+
+        // Check for collisions with other balls
+        for (let i = 1; i < branchBalls.length; i++) {
+        const otherBall = branchBalls[i];
+        const dx = otherBall.x - cue.x;
+        const dy = otherBall.y - cue.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < cue.radius + otherBall.radius) {
+          // Elastic collision
+          const normal = { x: dx / dist, y: dy / dist };
+          const tangent = { x: -normal.y, y: normal.x };
+
+          const v1n = normal.x * cue.vx + normal.y * cue.vy;
+          const v1t = tangent.x * cue.vx + tangent.y * cue.vy;
+          const v2n = normal.x * otherBall.vx + normal.y * otherBall.vy;
+          const v2t = tangent.x * otherBall.vx + tangent.y * otherBall.vy;
+
+          const v1nAfter = (v1n * (cue.mass - otherBall.mass) + 2 * otherBall.mass * v2n) / (cue.mass + otherBall.mass);
+          const v2nAfter = (v2n * (otherBall.mass - cue.mass) + 2 * cue.mass * v1n) / (cue.mass + otherBall.mass);
+
+          const v1nVec = { x: v1nAfter * normal.x, y: v1nAfter * normal.y };
+          const v1tVec = { x: v1t * tangent.x, y: v1t * tangent.y };
+          const v2nVec = { x: v2nAfter * normal.x, y: v2nAfter * normal.y };
+          const v2tVec = { x: v2t * tangent.x, y: v2t * tangent.y };
+
+          cue.vx = (v1nVec.x + v1tVec.x) * collisionDampening;
+          cue.vy = (v1nVec.y + v1tVec.y) * collisionDampening;
+          otherBall.vx = (v2nVec.x + v2tVec.x) * collisionDampening;
+          otherBall.vy = (v2nVec.y + v2tVec.y) * collisionDampening;
+
+          const overlap = cue.radius + otherBall.radius - dist;
+          cue.x -= normal.x * (overlap / 2);
+          cue.y -= normal.y * (overlap / 2);
+          otherBall.x += normal.x * (overlap / 2);
+          otherBall.y += normal.y * (overlap / 2);
+
+          // Optionally, trace the first collision point
+          trajectory.push({ x: cue.x, y: cue.y, collision: true });
+          break;
+        }
+        }
+      }
+      shotTree.push({ ballIndex: cueIndex, trajectory });
+      });
+
+      return shotTree;
+    }
+
+    // Multi Ball Prediction: Simulate all balls as if each is struck in the direction of the mouse
+    function predictMultiBallShots() {
+      const simBalls = balls.map(b => ({
+      x: b.x,
+      y: b.y,
+      vx: b.vx,
+      vy: b.vy,
+      spin: b.spin,
+      verticalSpin: b.verticalSpin,
+      radius: b.radius,
+      mass: b.mass,
+      color: b.color
+      }));
+
+      const shotTree = [];
+
+      for (let ballIndex = 0; ballIndex < simBalls.length; ballIndex++) {
+      const currentBall = simBalls[ballIndex];
+      const trajectory = [];
+
+      // Aim each ball toward the mouse position
+      const dx = mousePos.x - currentBall.x;
+      const dy = mousePos.y - currentBall.y;
+      const angle = Math.atan2(dy, dx);
+
+      const testBall = { ...currentBall };
+      testBall.vx = Math.cos(angle) * (shotPower / 5);
+      testBall.vy = Math.sin(angle) * (shotPower / 5);
+
+      // Apply spin/masse for cue ball, otherwise keep as is
+      let predictedSpin = (ballIndex === 0) ? spin : testBall.spin;
+      if (ballIndex === 0 && Math.abs(spin) > 30) {
+        let masseAngle = spin / 1000;
+        let cos = Math.cos(masseAngle);
+        let sin = Math.sin(masseAngle);
+        let newVx = testBall.vx * cos - testBall.vy * sin;
+        let newVy = testBall.vx * sin + testBall.vy * cos;
+        testBall.vx = newVx;
+        testBall.vy = newVy;
+      }
+      testBall.spin = predictedSpin;
+      testBall.verticalSpin = (ballIndex === 0) ? verticalSpin : testBall.verticalSpin;
+
+      // Simulate trajectory for this ball
+      for (let iter = 0; iter < predictionIterations; iter++) {
+        trajectory.push({ x: testBall.x, y: testBall.y });
+
+        // Decay side spin and apply lateral (masse) effect
+        testBall.spin *= spinFriction;
+        let lateralForce = testBall.spin * 0.001;
+        let perpVx = -testBall.vy;
+        let perpVy = testBall.vx;
+        let len = Math.sqrt(perpVx * perpVx + perpVy * perpVy);
+        if (len > 0) {
+        perpVx /= len;
+        perpVy /= len;
+        testBall.vx += perpVx * lateralForce;
+        testBall.vy += perpVy * lateralForce;
+        }
+
+        // Apply vertical spin effect
+        const speed = Math.sqrt(testBall.vx * testBall.vx + testBall.vy * testBall.vy);
+        if (speed > 0) {
+        const normVx = testBall.vx / speed;
+        const normVy = testBall.vy / speed;
+        testBall.vx += normVx * testBall.verticalSpin * verticalSpinFactor;
+        testBall.vy += normVy * testBall.verticalSpin * verticalSpinFactor;
+        }
+        testBall.verticalSpin *= verticalSpinFriction;
+
+        // Update position
+        testBall.x += testBall.vx;
+        testBall.y += testBall.vy;
+
+        // Apply friction
+        testBall.vx *= friction;
+        testBall.vy *= friction;
+
+        // Handle wall collisions
+        if (testBall.x - testBall.radius < 0 || testBall.x + testBall.radius > canvas.width) {
+        testBall.vx = -testBall.vx * collisionDampening;
+        }
+        if (testBall.y - testBall.radius < 0 || testBall.y + testBall.radius > canvas.height) {
+        testBall.vy = -testBall.vy * collisionDampening;
+        }
+
+        const allStopped = Math.abs(testBall.vx) < minVelocity && Math.abs(testBall.vy) < minVelocity;
+        if (allStopped) break;
+
+        // Check for collisions with other balls (simulate only position, not velocity transfer for prediction)
+        for (let i = 0; i < simBalls.length; i++) {
+        if (i === ballIndex) continue;
+        const otherBall = simBalls[i];
+        const dx = otherBall.x - testBall.x;
+        const dy = otherBall.y - testBall.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < testBall.radius + otherBall.radius) {
+          // Just stop the prediction at collision for clarity
+          break;
+        }
+        }
+      }
+      shotTree.push({ ballIndex, trajectory });
+      }
+      return shotTree;
+    }
+
+    function predictFullShot() {
+      if (predictionMode === 4) {
+        return predictAllPossibleShots();
+      }
+      if (predictionMode === 5) {
+        return predictMultiBallShots();
+      }
+
+      // --- MULTI BALL PREDICTION: Simulate all balls after collisions ---
+      // This will simulate the cue ball shot and propagate collisions, tracking all ball trajectories.
+      const simBalls = balls.map(b => ({
+        x: b.x,
+        y: b.y,
+        vx: b.vx,
+        vy: b.vy,
+        spin: b.spin,
+        verticalSpin: b.verticalSpin,
+        radius: b.radius,
+        mass: b.mass,
+        color: b.color,
+        pocketed: false // Add pocketed flag
+      }));
+
+      // Each ball gets its own trajectory array
+      const shotTree = simBalls.map(() => ({ trajectory: [], pocketed: false, pocket: null }));
+
+      // Set up the cue ball's initial velocity and spin
+      const cue = simBalls[0];
+      const dx = mousePos.x - cue.x;
+      const dy = mousePos.y - cue.y;
+      const angle = Math.atan2(dy, dx);
+      cue.vx = Math.cos(angle) * (shotPower / 5);
+      cue.vy = Math.sin(angle) * (shotPower / 5);
+
+      // Masse compatibility
+      if (Math.abs(spin) > 30) {
+        let masseAngle = spin / 1000;
+        let cos = Math.cos(masseAngle);
+        let sin = Math.sin(masseAngle);
+        let newVx = cue.vx * cos - cue.vy * sin;
+        let newVy = cue.vx * sin + cue.vy * cos;
+        cue.vx = newVx;
+        cue.vy = newVy;
+      }
+      cue.spin = spin;
+      cue.verticalSpin = verticalSpin;
+
+      // Simulate all balls for N iterations, tracking their paths
+      for (let iter = 0; iter < predictionIterations; iter++) {
+        // Save each ball's position at this step
+        simBalls.forEach((b, i) => {
+          shotTree[i].ballIndex = i;
+          shotTree[i].trajectory.push({ x: b.x, y: b.y });
+        });
+
+        // Update physics for each ball (skip pocketed balls)
+        simBalls.forEach((b, i) => {
+          if (b.pocketed) return;
+          // Decay side spin and apply lateral (masse) effect
+          b.spin *= spinFriction;
+          let lateralForce = b.spin * 0.001;
+          let perpVx = -b.vy;
+          let perpVy = b.vx;
+          let len = Math.sqrt(perpVx * perpVx + perpVy * perpVy);
+          if (len > 0) {
+            perpVx /= len;
+            perpVy /= len;
+            b.vx += perpVx * lateralForce;
+            b.vy += perpVy * lateralForce;
+          }
+
+          // Apply vertical spin effect
+          const speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+          if (speed > 0) {
+            const normVx = b.vx / speed;
+            const normVy = b.vy / speed;
+            b.vx += normVx * b.verticalSpin * verticalSpinFactor;
+            b.vy += normVy * b.verticalSpin * verticalSpinFactor;
+          }
+          b.verticalSpin *= verticalSpinFriction;
+
+          // Update position
+          b.x += b.vx;
+          b.y += b.vy;
+
+          // Apply friction
+          b.vx *= friction;
+          b.vy *= friction;
+
+          // Handle wall collisions
+          if (b.x - b.radius < 0) {
+            b.x = b.radius;
+            b.vx = -b.vx * collisionDampening;
+          }
+          if (b.x + b.radius > canvas.width) {
+            b.x = canvas.width - b.radius;
+            b.vx = -b.vx * collisionDampening;
+          }
+          if (b.y - b.radius < 0) {
+            b.y = b.radius;
+            b.vy = -b.vy * collisionDampening;
+          }
+          if (b.y + b.radius > canvas.height) {
+            b.y = canvas.height - b.radius;
+            b.vy = -b.vy * collisionDampening;
+          }
+        });
+
+        // Handle ball-ball collisions (elastic, pairwise, skip pocketed balls)
+        for (let i = 0; i < simBalls.length; i++) {
+          for (let j = i + 1; j < simBalls.length; j++) {
+            const b1 = simBalls[i];
+            const b2 = simBalls[j];
+            if (b1.pocketed || b2.pocketed) continue;
+            const dx = b2.x - b1.x;
+            const dy = b2.y - b1.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < b1.radius + b2.radius) {
+              const normal = { x: dx / dist, y: dy / dist };
+              const tangent = { x: -normal.y, y: normal.x };
+
+              const v1n = normal.x * b1.vx + normal.y * b1.vy;
+              const v1t = tangent.x * b1.vx + tangent.y * b1.vy;
+              const v2n = normal.x * b2.vx + normal.y * b2.vy;
+              const v2t = tangent.x * b2.vx + tangent.y * b2.vy;
+
+              const v1nAfter = (v1n * (b1.mass - b2.mass) + 2 * b2.mass * v2n) / (b1.mass + b2.mass);
+              const v2nAfter = (v2n * (b2.mass - b1.mass) + 2 * b1.mass * v1n) / (b1.mass + b2.mass);
+
+              const v1nVec = { x: v1nAfter * normal.x, y: v1nAfter * normal.y };
+              const v1tVec = { x: v1t * tangent.x, y: v1t * tangent.y };
+              const v2nVec = { x: v2nAfter * normal.x, y: v2nAfter * normal.y };
+              const v2tVec = { x: v2t * tangent.x, y: v2t * tangent.y };
+
+              b1.vx = (v1nVec.x + v1tVec.x) * collisionDampening;
+              b1.vy = (v1nVec.y + v1tVec.y) * collisionDampening;
+              b2.vx = (v2nVec.x + v2tVec.x) * collisionDampening;
+              b2.vy = (v2nVec.y + v2tVec.y) * collisionDampening;
+
+              const overlap = b1.radius + b2.radius - dist;
+              b1.x -= normal.x * (overlap / 2);
+              b1.y -= normal.y * (overlap / 2);
+              b2.x += normal.x * (overlap / 2);
+              b2.y += normal.y * (overlap / 2);
+            }
+          }
+        }
+
+        // Pocket detection: check if any ball enters a pocket
+        simBalls.forEach((b, i) => {
+          if (b.pocketed) return;
+          for (const pocket of pockets) {
+            const dx = b.x - pocket.x;
+            const dy = b.y - pocket.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < pocket.r) {
+              b.pocketed = true;
+              shotTree[i].pocketed = true;
+              shotTree[i].pocket = { x: pocket.x, y: pocket.y, r: pocket.r };
+              // Mark the trajectory with the pocket position for later drawing
+              shotTree[i].trajectory.push({ x: pocket.x, y: pocket.y, pocketed: true });
+              break;
+            }
+          }
+        });
+
+        // Stop simulation early if all balls are stopped or pocketed
+        let allStopped = true;
+        for (let b of simBalls) {
+          if (!b.pocketed && (Math.abs(b.vx) >= minVelocity || Math.abs(b.vy) >= minVelocity)) {
+            allStopped = false;
+            break;
+          }
+        }
+        if (allStopped) break;
+      }
+
+      // Only show cue ball trajectory for single-shot mode
+      if (predictionMode === 1) {
+        return [shotTree[0]];
+      }
+      // Show all balls for full/advanced prediction
+      if (predictionMode === 2 || predictionMode === 3) {
+        return shotTree;
+      }
+      return [];
+    }
+
+    // Keep the prediction visible until the cue ball stops moving, or always if sticky is on
+    function updatePrediction() {
+      if (
+        predictionSticky ||
+        (Math.abs(cueBall.vx) < minVelocity && Math.abs(cueBall.vy) < minVelocity)
+      ) {
+        cachedTrajectories = predictFullShot();
+      }
+      // Do NOT clear cachedTrajectories when cue ball is moving
+      // This keeps the prediction visible until the cue ball is stopped or sticky is on
+    }
+
+    setInterval(updatePrediction, 1); // Update prediction every 1ms
+
+    function drawCachedShotPredictor(shotTree) {
+      if (predictionMode === 0) return; // Do not draw if prediction is off
+
+      shotTree.forEach((branch, idx) => {
+      if (branch.trajectory.length === 0) return;
+      ctx.beginPath();
+      // Color for "all possible shots" mode: rainbow
+      if (predictionMode === 4) {
+        const hue = (idx / shotTree.length) * 360;
+        ctx.strokeStyle = `hsl(${hue}, 100%, 60%)`;
+      } else if (predictionMode === 5) {
+        // Multi Ball: color by ball
+        const color = balls[branch.ballIndex] ? balls[branch.ballIndex].color : "white";
+        ctx.strokeStyle = color === "white" ? "#fff" : color;
+      } else {
+        ctx.strokeStyle = "rgba(255,255,255,0.6)";
+      }
+      ctx.lineWidth = 2;
+      ctx.setLineDash([5, 5]);
+      ctx.moveTo(branch.trajectory[0].x, branch.trajectory[0].y);
+      for (let i = 1; i < branch.trajectory.length; i++) {
+        ctx.lineTo(branch.trajectory[i].x, branch.trajectory[i].y);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+      });
+    }
+    // -------------------------
+    // END ENHANCED PREDICTIVE SIMULATION CODE
+    // -------------------------
+
+    // Draw the cue stick (only when the cue ball is nearly stationary).
+    function drawCueStick() {
+      if (Math.abs(cueBall.vx) > 0.5 || Math.abs(cueBall.vy) > 0.5) return;
+      const angle = Math.atan2(mousePos.y - cueBall.y, mousePos.x - cueBall.x);
+      const cuestickLengthInput = document.getElementById("cuesticklength");
+      const stickLength = cuestickLengthInput ? cuestickLengthInput.value : 100;
+      const stickWidth = 6;
+      const offset = -cueBall.radius - stickLength;
+      ctx.save();
+      ctx.translate(cueBall.x, cueBall.y);
+      ctx.rotate(angle);
+      const cuestickColorInput = document.getElementById("cuestickcolor");
+      ctx.fillStyle = cuestickColorInput ? cuestickColorInput.value : "#ffffff";
+      ctx.fillRect(offset, -stickWidth / 2, stickLength, stickWidth);
+      ctx.restore();
+
+      // Draw aiming line
+      ctx.beginPath();
+      ctx.setLineDash([5, 5]);
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
+      ctx.moveTo(cueBall.x, cueBall.y);
+      ctx.lineTo(mousePos.x, mousePos.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+
+    // Draw the pockets.
+    function drawPockets() {
+      pockets.forEach(pocket => {
+        ctx.beginPath();
+        ctx.arc(pocket.x, pocket.y, pocket.r, 0, Math.PI * 2);
+        ctx.fillStyle = "black";
+        ctx.fill();
+        ctx.closePath();
+      });
+    }
+
+
+    // Check for pocketed balls.
+    // If the cue ball is pocketed, set it to ball in hand.
+    // If an object ball with color "black" (the 8-ball) is pocketed, reset the game.
+    function checkPockets() {
+      for (let i = balls.length - 1; i >= 0; i--) {
+        const ball = balls[i];
+        for (const pocket of pockets) {
+          const dx = ball.x - pocket.x;
+          const dy = ball.y - pocket.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < pocket.r) {
+            if (ball === cueBall) {
+              console.log("Cue ball pocketed: ball in hand");
+              cueBall.inHand = true;
+              cueBall.vx = 0;
+              cueBall.vy = 0;
+              // Optionally reposition to the kitchen.
+              cueBall.x = 150;
+              cueBall.y = canvas.height / 2;
+            } else if (ball.color === "black") {
+              alert("8-ball pocketed! Resetting game.");
+              resetGame();
+              return;
+            } else {
+              balls.splice(i, 1);
+              break;
+            }
+          }
+        }
+      }
+    }
+
+
+    // Handle collisions between balls.
+    function handleBallCollisions() {
+      for (let i = 0; i < balls.length; i++) {
+        for (let j = i + 1; j < balls.length; j++) {
+          const ball1 = balls[i];
+          const ball2 = balls[j];
+          const dx = ball2.x - ball1.x;
+          const dy = ball2.y - ball1.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance < ball1.radius + ball2.radius) {
+            const normal = { x: dx / distance, y: dy / distance };
+            const tangent = { x: -normal.y, y: normal.x };
+            const v1n = normal.x * ball1.vx + normal.y * ball1.vy;
+            const v1t = tangent.x * ball1.vx + tangent.y * ball1.vy;
+            const v2n = normal.x * ball2.vx + normal.y * ball2.vy;
+            const v2t = tangent.x * ball2.vx + tangent.y * ball2.vy;
+            const v1nAfter = (v1n * (ball1.mass - ball2.mass) + 2 * ball2.mass * v2n) / (ball1.mass + ball2.mass);
+            const v2nAfter = (v2n * (ball2.mass - ball1.mass) + 2 * ball1.mass * v1n) / (ball1.mass + ball2.mass);
+            const v1nVec = { x: normal.x * v1nAfter, y: normal.y * v1nAfter };
+            const v1tVec = { x: tangent.x * v1t, y: tangent.y * v1t };
+            const v2nVec = { x: normal.x * v2nAfter, y: normal.y * v2nAfter };
+            const v2tVec = { x: tangent.x * v2t, y: tangent.y * v2t };
+            ball1.vx = (v1nVec.x + v1tVec.x) * collisionDampening;
+            ball1.vy = (v1nVec.y + v1tVec.y) * collisionDampening;
+            ball2.vx = (v2nVec.x + v2tVec.x) * collisionDampening;
+            ball2.vy = (v2nVec.y + v2tVec.y) * collisionDampening;
+            const overlap = ball1.radius + ball2.radius - distance;
+            ball1.x -= normal.x * (overlap / 2);
+            ball1.y -= normal.y * (overlap / 2);
+            ball2.x += normal.x * (overlap / 2);
+            ball2.y += normal.y * (overlap / 2);
+          }
+        }
+      }
+    }
+
+
+    // Main game loop.
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawPockets();
+     
+      const now = performance.now();
+      if (now - lastPredictionTime > predictionInterval) {
+        cachedTrajectories = predictFullShot();
+        lastPredictionTime = now;
+      }
+      drawCachedShotPredictor(cachedTrajectories);
+     
+      drawCueStick();
+      balls.forEach(ball => {
+        ball.update();
+        ball.draw();
+      });
+      handleBallCollisions();
+      checkPockets();
+      requestAnimationFrame(gameLoop);
+    }
+
+
+    gameLoop();
+  </script>
+</body>
+</html>
