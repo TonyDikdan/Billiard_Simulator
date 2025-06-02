@@ -374,11 +374,11 @@ document.addEventListener("keydown", (e) => {
   }
   // Masse Spin: Left/Right arrows
   if (e.key === "ArrowLeft") {
-    spinInput.value = Math.max(-100, parseInt(spinInput.value) - 1);
+    spinInput.value = Math.max(-500, parseInt(spinInput.value) - 1);
     spinInput.dispatchEvent(new Event("input"));
   }
   if (e.key === "ArrowRight") {
-    spinInput.value = Math.min(100, parseInt(spinInput.value) + 1);
+    spinInput.value = Math.min(500, parseInt(spinInput.value) + 1);
     spinInput.dispatchEvent(new Event("input"));
   }
   // Vertical Spin: W/S
